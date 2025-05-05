@@ -17,7 +17,9 @@ pipeline {
             steps {
                 // Use a virtual environment
                 bat '''
-                python -m venv venv && venv/Scripts/activate && pip install -r requirements.txt
+                python -m venv venv
+                call venv\\Scripts\\activate.bat
+                pip install -r requirements.txt
                 '''
             }
         }
@@ -26,7 +28,8 @@ pipeline {
             steps {
                 // Run pytest with report generation
                 bat '''
-                venv/Scripts/activate && pytest --maxfail=1 --disable-warnings -q --junitxml=tests/pytest-report.xml
+                call venv\\Scripts\\activate.bat
+                pytest --maxfail=1 --disable-warnings -q --junitxml=tests\\pytest-report.xml
                 '''
             }
         }
