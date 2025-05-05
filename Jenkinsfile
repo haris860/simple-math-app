@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'simple-math-app:latest'
-        // Adjust to your Jenkins workspace if needed
         VOLUME_PATH = '/c/ProgramData/Jenkins/.jenkins/workspace/simple-math-app-pipeline'
         WORKSPACE_PATH = '/workspace'
     }
@@ -31,7 +30,7 @@ pipeline {
                         -v ${VOLUME_PATH}:${WORKSPACE_PATH} ^
                         -w ${WORKSPACE_PATH} ^
                         ${DOCKER_IMAGE} ^
-                        pytest tests/ --junitxml=tests/pytest-report.xml
+                        cmd /c "pytest tests/ --junitxml=tests/pytest-report.xml"
                     """
                 }
             }
@@ -40,7 +39,13 @@ pipeline {
 
     post {
         always {
-            junit 'tests/pytest-report.xml'
+            script {
+                if (fileExists('tests/pytest-report.xml')) {
+                    junit 'tests/pytest-report.xml'
+                } else {
+                    echo 'Test report not found or could not be generated.'
+                }
+            }
         }
     }
 }
