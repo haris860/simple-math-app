@@ -8,19 +8,29 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git 'https://github.com/haris860/simple-math-app.git'
+                // Checkout the specified repository and branch
+                git branch: 'main', url: 'https://github.com/haris860/simple-math-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                // Use a virtual environment
+                sh '''
+                python -m venv venv
+                . venv/Scripts/activate
+                pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest'
+                // Run pytest with report generation
+                sh '''
+                . venv/Scripts/activate
+                pytest --maxfail=1 --disable-warnings -q --junitxml=tests/pytest-report.xml
+                '''
             }
         }
     }
