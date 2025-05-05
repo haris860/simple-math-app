@@ -3,8 +3,9 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'simple-math-app:latest'
-        WORKSPACE_PATH = "/c/ProgramData/Jenkins/.jenkins/workspace/simple-math-app-pipeline"
-        VOLUME_PATH = "/c/ProgramData/Jenkins/.jenkins/workspace/simple-math-app-pipeline"
+        // Update workspace path to be in a format Docker can understand on Windows
+        WORKSPACE_PATH = "/workspace"
+        VOLUME_PATH = "C:/ProgramData/Jenkins/.jenkins/workspace/simple-math-app-pipeline"
     }
 
     stages {
@@ -26,9 +27,10 @@ pipeline {
         stage('Run Tests Inside Docker') {
             steps {
                 script {
-                    // Run the container and let the CMD ["pytest"] in the Dockerfile handle the test execution
-                    dockerImage.inside("-d -t -w ${WORKSPACE_PATH} -v ${VOLUME_PATH}:/workspace") {
-                        // No need to run pytest again; Dockerfile CMD will automatically run pytest
+                    // Run the container in detached mode and bind the workspace to the container's /workspace
+                    // Use correct volume path and working directory in Linux-style path
+                    docker.run("${DOCKER_IMAGE}", "-d -t -v ${VOLUME_PATH}:${WORKSPACE_PATH} -w ${WORKSPACE_PATH}") {
+                        // No need to manually run pytest as it's handled by CMD in the Dockerfile
                         echo 'Running tests inside the container (via CMD in Dockerfile)...'
                     }
                 }
