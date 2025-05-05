@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'simple-math-app:latest'
+        WORKSPACE_PATH = "/c/ProgramData/Jenkins/.jenkins/workspace/simple-math-app-pipeline"
+        VOLUME_PATH = "/c/ProgramData/Jenkins/.jenkins/workspace/simple-math-app-pipeline"
+    }
+
     stages {
         stage('Clone') {
             steps {
@@ -11,7 +17,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("simple-math-app:latest")
+                    // Build the Docker image using the Dockerfile
+                    dockerImage = docker.build(DOCKER_IMAGE, "-f Dockerfile .")
                 }
             }
         }
@@ -19,8 +26,10 @@ pipeline {
         stage('Run Tests Inside Docker') {
             steps {
                 script {
-                    dockerImage.inside {
-                        bat 'pytest --maxfail=1 --disable-warnings -q --junitxml=tests/pytest-report.xml'
+                    // Run the container and let the CMD ["pytest"] in the Dockerfile handle the test execution
+                    dockerImage.inside("-d -t -w ${WORKSPACE_PATH} -v ${VOLUME_PATH}:/workspace") {
+                        // No need to run pytest again; Dockerfile CMD will automatically run pytest
+                        echo 'Running tests inside the container (via CMD in Dockerfile)...'
                     }
                 }
             }
@@ -29,6 +38,7 @@ pipeline {
 
     post {
         always {
+            // Always archive the test results to Jenkins
             junit 'tests/pytest-report.xml'
         }
     }
