@@ -16,7 +16,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // Use a virtual environment
-                sh '''
+                bat '''
                 python -m venv venv
                 . venv/Scripts/activate
                 pip install -r requirements.txt
@@ -27,7 +27,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 // Run pytest with report generation
-                sh '''
+                bat '''
                 . venv/Scripts/activate
                 pytest --maxfail=1 --disable-warnings -q --junitxml=tests/pytest-report.xml
                 '''
