@@ -30,7 +30,7 @@ pipeline {
                         -v ${VOLUME_PATH}:${WORKSPACE_PATH} ^
                         -w ${WORKSPACE_PATH} ^
                         ${DOCKER_IMAGE} ^
-                        cmd /c "pytest tests/ --junitxml=tests/pytest-report.xml"
+                        sh -c "pytest tests/ --junitxml=tests/pytest-report.xml"
                     """
                 }
             }
