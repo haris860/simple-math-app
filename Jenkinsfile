@@ -1,36 +1,28 @@
 pipeline {
     agent any
 
-    environment {
-        PYTHONPATH = "${WORKSPACE}"
-    }
-
     stages {
         stage('Clone') {
             steps {
-                // Checkout the specified repository and branch
                 git branch: 'main', url: 'https://github.com/haris860/simple-math-app.git'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Docker Image') {
             steps {
-                // Use a virtual environment
-                bat '''
-                python -m venv venv
-                call venv\\Scripts\\activate.bat
-                pip install -r requirements.txt
-                '''
+                script {
+                    dockerImage = docker.build("simple-math-app:latest")
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Tests Inside Docker') {
             steps {
-                // Run pytest with report generation
-                bat '''
-                call venv\\Scripts\\activate.bat
-                pytest --maxfail=1 --disable-warnings -q --junitxml=tests\\pytest-report.xml
-                '''
+                script {
+                    dockerImage.inside {
+                        bat 'pytest --maxfail=1 --disable-warnings -q --junitxml=tests/pytest-report.xml'
+                    }
+                }
             }
         }
     }
